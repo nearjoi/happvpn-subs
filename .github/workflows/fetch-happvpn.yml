@@ -1,0 +1,31 @@
+name: fetch-happvpn
+
+on:
+  schedule:
+    # every 3 hours, at minute 0
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run scraper
+        run: python scripts/fetch_happvpn.py
+
+      - name: Commit & push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add subs/happvpn_incy.txt subs/happvpn_incy.b64
+          if git diff --cached --quiet; then
+            echo "no changes"
+          else
+            git commit -m "chore: refresh Incy subscription"
+            git push
+          fi
